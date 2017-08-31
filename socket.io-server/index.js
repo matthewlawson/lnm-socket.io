@@ -7,6 +7,13 @@ io.on('connection', (client) => {
   console.log('connection');
 
   io.emit('message', {body: `hello ${client.id}`});
+
+  client.on('action', (action) => {
+    if(action.type === 'server/hello'){
+      console.log('Got hello data!', action.data);
+      client.emit('action', {type:'message', text:'good day!'});
+    }
+  });
 });
 
 
