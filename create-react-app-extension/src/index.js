@@ -5,11 +5,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import App from './App';
 
-// store.subscribe(()=>{
-//   console.log('new client state', store.getState());
-// });
-
-store.dispatch({type:'server/hello', data:'Hello!'});
+store.dispatch({type:'chrome/hello', text:'Hello!'});
 
 ReactDOM.render(
   <Provider store={store}>

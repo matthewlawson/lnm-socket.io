@@ -4,8 +4,8 @@ import ChatBubble from '../ChatBubble';
 
 import './Chat.css'
 const ChatWindow = ({connectionStatus, messages}) => {
-  const chatBubbles = messages.map((message) => {
-    return <ChatBubble text={message.text} />
+  const chatBubbles = messages.map((i, message) => {
+    return <ChatBubble text={message.text} key={i} />
   });
 
   const connectingClass = () => {
