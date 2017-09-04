@@ -8,6 +8,8 @@ function messages(state = initialMessages, action) {
       let newState = state.slice();
       newState.push(action.message);
       return newState;
+    case types.MESSAGE_FETCH_SUCCESS:
+      return action.messages;
     default:
       return state;
   }

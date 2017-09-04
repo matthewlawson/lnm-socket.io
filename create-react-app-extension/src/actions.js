@@ -15,13 +15,21 @@ export const connectionChanged = connection => {
   }
 }
 
+export const messageFetchedSuccess = messages => {
+  return {
+    type: types.MESSAGE_FETCH_SUCCESS,
+    messages
+  }
+}
+
 function dummyChrome() {
   console.log('Running in browser mode');
   return {
     runtime: {
       onMessage: {
-        addListener: () => { }
-      }
+        addListener: () => {}
+      },
+      sendMessage: () => {}
     }
   };
 }
@@ -58,5 +66,19 @@ export const initialiseMessageProcessing = params => async dispatch => {
     setTimeout(() => {
       dispatch(connectionChanged('connected'));
     }, 3000);
+
+    setTimeout(() => {
+      dispatch(messageFetchedSuccess(['hi', 'hello']));
+    }, 3000);
   }
 };
+
+export const fetchMessages = (params) => async dispatch => {
+  //Send message to chrome background task and get messages.
+
+  chrome.runtime.sendMessage({type: messageTypes.FETCH_MESSAGES}, function (response) { //eslint-disable-line no-undef
+    if(response) {
+      dispatch(messageFetchedSuccess(response));
+    }
+  });  
+}

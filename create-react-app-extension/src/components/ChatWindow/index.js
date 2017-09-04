@@ -2,6 +2,8 @@ import React, { Component }  from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import ChatBubble from '../ChatBubble';
+import { fetchMessages } from '../../actions';
+import { bindActionCreators } from 'redux';
 
 import './Chat.css'
 
@@ -36,6 +38,11 @@ class ChatWindow extends Component {
       
     </div>
   }
+
+  componentDidMount() {
+    // Fetch messages when chrome window opens
+    this.props.fetchMessages();
+  }
 }
 
 ChatWindow.propTypes = {
@@ -51,9 +58,12 @@ const mapStateToProps = state => {
   return newProps;
 };
 
-const mapDispatchToProps = dispatch => ({
-  
-});
+const mapDispatchToProps = dispatch => bindActionCreators(
+  {
+    fetchMessages,
+  },
+  dispatch,
+);
 
 export default connect(
   mapStateToProps,
