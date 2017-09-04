@@ -6,7 +6,6 @@ const mapStateToProps = state => {
     messages: state.messages,
     connectionStatus: state.connectionStatus
   };
-  console.log(newProps);
   return newProps;
 };
 
@@ -14,9 +13,8 @@ const mapDispatchToProps = dispatch => ({
   
 });
 
-const ChatData = connect(
+export default connect(
   mapStateToProps,
   mapDispatchToProps,
 )(Chat);
 
-export default ChatData;

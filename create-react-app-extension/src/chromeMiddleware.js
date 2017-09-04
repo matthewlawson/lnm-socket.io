@@ -31,8 +31,8 @@ export default function startChromeMessageListening(criteria = 'chrome/',
     return matched;
   }
 
-  function defaultExecute(action, emit, next, dispatch) { // eslint-disable-line no-unused-vars
-    console.log('executing', emit);
+  function defaultExecute(action, emit, next, dispatch) { 
+    
     emit(eventName, action);
     return next(action);
   }
@@ -42,7 +42,7 @@ export default function startChromeMessageListening(criteria = 'chrome/',
   }
   
   //So it can be dev's in the browser a little easier
-  function dummyChrome () {
+  function dummyChrome () { // eslint-disable-line no-unused-vars
     console.log('Running in browser mode');
     return {runtime: {
         onMessage: {
@@ -52,19 +52,18 @@ export default function startChromeMessageListening(criteria = 'chrome/',
     }
   
   function setupBackgroundServiceDispatcher(dispatch) {
-    const chrome = chrome && chrome.extension ? chrome: dummyChrome(); // eslint-disable-line no-use-before-define
-    
+    //const chrome = chrome && chrome.extension ? chrome: dummyChrome(); // eslint-disable-line no-use-before-define
+    console.log('registering listeners ....')
     chrome.runtime.onMessage.addListener( // eslint-disable-line no-undef
       function (request, sender, sendResponse) {
         console.log(sender.tab ?
           "from a content script:" + sender.tab.url :
           "from the extension");
-        if (request.type === "send_notifications") {
-          sendResponse({ ping: 'pong' });
-          console.log(request);
-          //Dispatch to redx=ux the message from chrome background thread 
-          dispatch(request);
-        }
+        sendResponse({ ping: 'pong' });
+        console.log(request);
+        //Dispatch to redx=ux the message from chrome background thread 
+        dispatch(request);
+        
       }
     );
   }
