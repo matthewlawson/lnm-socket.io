@@ -1,5 +1,7 @@
 export const actionTypes = {
   BACKGROUND_SCRIPT: 'BACKGROUND_SCRIPT',
+  CONNECTION_CHANGED: 'CONNECTION_CHANGED',
+  MESSAGE_TEXT_RECEIVED: 'MESSAGE_TEXT_RECEIVED',
 }
 
 export const messageTypes = {

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { initialiseMessageProcessing } from '../../actions';
 import './App.css';
-import ChatWindow from '../ChatWindow/data';
+import ChatWindow from '../ChatWindow/';
 
 class App extends Component {
   render() {
@@ -15,7 +15,7 @@ class App extends Component {
     );
   }
 
-  componentDidMount() {
+  componentWillMount() {
     this.props.initialiseMessageProcessing();
   }
 }

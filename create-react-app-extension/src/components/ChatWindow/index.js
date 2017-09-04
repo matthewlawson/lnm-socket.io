@@ -1,41 +1,61 @@
-import React from 'react';
+import React, { Component }  from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import ChatBubble from '../ChatBubble';
 
 import './Chat.css'
-const ChatWindow = ({connectionStatus, messages}) => {
-  const chatBubbles = messages.map( ( message, i) => {
-    return <ChatBubble text={message} key={i} />
-  });
 
-  const connectingClass = () => {
-    return `button ${connectionStatus}`;
-  }
-  return <div>
-    <div className="chat_window">
-      <div className="top_menu">
-        <div className="buttons">
-          <div className={connectingClass()}></div>
+class ChatWindow extends Component {
+  render() {
+    const chatBubbles = this.props.messages.map( ( message, i) => {
+      return <ChatBubble text={message} key={i} />
+    });
+  
+    const connectingClass = () => {
+      return `button ${this.props.connectionStatus}`;
+    }
+    return <div>
+      <div className="chat_window">
+        <div className="top_menu">
+          <div className="buttons">
+            <div className={connectingClass()}></div>
+          </div>
+          <div className="title">Chat</div>
         </div>
-        <div className="title">Chat</div>
-      </div>
-      <ul className="messages">
-        {chatBubbles}
-      </ul>
-      <div className="bottom_wrapper clearfix">
-        <div className="message_input_wrapper"><input className="message_input" placeholder="Type your message here..." /></div>
-        <div className="send_message">
-          <div className="icon"></div>
-          <div className="text">Send</div>
+        <ul className="messages">
+          {chatBubbles}
+        </ul>
+        <div className="bottom_wrapper clearfix">
+          <div className="message_input_wrapper"><input className="message_input" placeholder="Type your message here..." /></div>
+          <div className="send_message">
+            <div className="icon"></div>
+            <div className="text">Send</div>
+          </div>
         </div>
       </div>
+      
     </div>
-    
-  </div>
-};
+  }
+}
 
 ChatWindow.propTypes = {
   connectionStatus: PropTypes.string,
   messages: PropTypes.array
 }
-export default ChatWindow;
+
+const mapStateToProps = state => {
+  const newProps = {
+    messages: state.messages,
+    connectionStatus: state.connectionStatus
+  };
+  return newProps;
+};
+
+const mapDispatchToProps = dispatch => ({
+  
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(ChatWindow);
