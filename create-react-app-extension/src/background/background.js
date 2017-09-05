@@ -1,5 +1,6 @@
 import io from 'socket.io-client';
-import { messageTypes, messagePayloads } from './actionsTypes';
+import { messageTypes, messagePayloads } from '../actionsTypes';
+import sendChromeMessage from '../sendChromeMessage';
 
 const socket = io('http://localhost:3000');
 
@@ -13,7 +14,7 @@ socket.on('connect', async () => {
     payload: connectionStatus,
   }
   try {
-    await sendToBrowserAction(packet);
+    await sendChromeMessage(packet);
   }
   catch (err) { }
 });
@@ -26,7 +27,7 @@ socket.on(messageTypes.MESSAGE_TEXT, async (payload) => {
     payload: payload
   }
   try {
-    await sendToBrowserAction(packet);
+    await sendChromeMessage(packet);
   }
   catch (err) { }
 
@@ -39,24 +40,13 @@ socket.on('disconnect', async () => {
     payload: connectionStatus,
   }
   try {
-    await sendToBrowserAction(packet);
+    await sendChromeMessage(packet);
   }
   catch (err) { }
 });
 
-function sendToBrowserAction(payload) {
-  console.log("Sending to browserAction: ", payload);
-
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(payload, function (response) { //eslint-disable-line no-undef
-      if (response) {
-        resolve(response);
-      }
-      else {
-        reject("browserAction not open");
-      }
-    });
-  });
+function sendMessageFromClient(message) {
+  socket.emit(messageTypes.SEND_MESSAGE, message);
 }
 
 //Add listener fro message request ....
@@ -65,6 +55,9 @@ chrome.runtime.onMessage.addListener( //eslint-disable-line no-undef
     switch (request.type) {
       case messageTypes.FETCH_MESSAGES:
         sendResponse(messages);
+        break;
+      case messageTypes.SEND_MESSAGE:
+        sendMessageFromClient(request.payload);
         break;
       default:
         break;

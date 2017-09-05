@@ -1,5 +1,8 @@
 /* eslint-disable */
 import { actionTypes as types, messageTypes } from './actionsTypes';
+import sendChromeMessage from './sendChromeMessage';
+
+const isChromeExtentsion = window.chrome && chrome && chrome.runtime && chrome.runtime.id;
 
 export const textMessageReceived = message => {
   return {
@@ -22,6 +25,24 @@ export const messageFetchedSuccess = messages => {
   }
 }
 
+const sendMessagePending = () => {
+  return {
+    type: types.SEND_MESSAGE_PENDING,
+  }
+}
+
+const sendMessageSuccess = () => {
+  return {
+    type: types.SEND_MESSAGE_SUCCESS,
+  }
+}
+
+const sendMessageFailure = () => {
+  return {
+    type: types.SEND_MESSAGE_FAILURE,
+  }
+}
+
 function dummyChrome() {
   console.log('Running in browser mode');
   return {
@@ -33,8 +54,30 @@ function dummyChrome() {
     }
   };
 }
+export const updateComposingMessage = (composingMessage) => {
+  return {
+    type: types.MESSAGE_CHANGED,
+    composingMessage
+  }
+};
 
-const isChromeExtentsion = window.chrome && chrome && chrome.runtime && chrome.runtime.id;
+// export const messageChanged = event => dispatch => {
+//   console.log(event.target.value);
+//   // Could dispatch typing notifications etc..
+//   dispatch(updateComposingMessage(event.target.value));
+// }
+
+export const sendMessage = message => async dispatch => {
+  dispatch(sendMessagePending());
+  
+  try {
+    const backgroundResponse = await sendChromeMessage(message);
+    dispatch(sendMessageSuccess());
+  }
+  catch(err) {
+    dispatch(sendMessageFailure());
+  }
+}
 export const initialiseMessageProcessing = params => async dispatch => {
 
   if (!isChromeExtentsion) {
@@ -75,7 +118,6 @@ export const initialiseMessageProcessing = params => async dispatch => {
 
 export const fetchMessages = (params) => async dispatch => {
   //Send message to chrome background task and get messages.
-
   chrome.runtime.sendMessage({type: messageTypes.FETCH_MESSAGES}, function (response) { //eslint-disable-line no-undef
     if(response) {
       dispatch(messageFetchedSuccess(response));

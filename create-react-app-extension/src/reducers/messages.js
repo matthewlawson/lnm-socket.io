@@ -1,15 +1,21 @@
 import { actionTypes as types } from '../actionsTypes';
 
-const initialMessages = ['hello'];
+const initialState = {
+  messages: ['hello'],
+  composingMessage: ''
+};
 
-function messages(state = initialMessages, action) {
+function messages(state = initialState, action) {
   switch (action.type) {
     case types.MESSAGE_TEXT_RECEIVED:
-      let newState = state.slice();
-      newState.push(action.message);
-      return newState;
+      let newMessages = state.messages.slice();
+      newMessages.push(action.message);
+      return { ...state, messages: newMessages };
     case types.MESSAGE_FETCH_SUCCESS:
-      return action.messages;
+      return { ...state, messages: action.messages }
+    case types.MESSAGE_CHANGED:
+      console.log(action.composingMessage);
+      return { ...state, composingMessage: action.composingMessage }
     default:
       return state;
   }

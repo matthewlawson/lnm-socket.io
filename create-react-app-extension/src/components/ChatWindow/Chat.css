@@ -164,14 +164,18 @@ body {
   position: relative;
   padding: 0 20px;
 }
+
 .bottom_wrapper .message_input_wrapper .message_input {
   border: none;
   height: 100%;
   box-sizing: border-box;
   width: calc(100% - 40px);
-  position: absolute;
+  position: relative;
   outline-width: 0;
   color: gray;
+}
+.message_input {
+  position: relative;
 }
 .bottom_wrapper .send_message {
   width: 140px;
