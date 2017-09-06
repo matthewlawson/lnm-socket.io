@@ -54,6 +54,8 @@ function dummyChrome() {
     }
   };
 }
+
+
 export const updateComposingMessage = (composingMessage) => {
   return {
     type: types.MESSAGE_CHANGED,
@@ -61,21 +63,23 @@ export const updateComposingMessage = (composingMessage) => {
   }
 };
 
-// export const messageChanged = event => dispatch => {
-//   console.log(event.target.value);
-//   // Could dispatch typing notifications etc..
-//   dispatch(updateComposingMessage(event.target.value));
-// }
-
 export const sendMessage = message => async dispatch => {
   dispatch(sendMessagePending());
   
   try {
-    const backgroundResponse = await sendChromeMessage(message);
+    const backgroundResponse = await sendChromeMessage(sendComposedMessageToBackground(message));
     dispatch(sendMessageSuccess());
   }
   catch(err) {
     dispatch(sendMessageFailure());
+  }
+}
+
+//Split actions into redux actions and actions to send to background
+const sendComposedMessageToBackground = (message) => {
+  return {
+    type: messageTypes.SEND_MESSAGE,
+    message
   }
 }
 export const initialiseMessageProcessing = params => async dispatch => {

@@ -52,12 +52,13 @@ function sendMessageFromClient(message) {
 //Add listener fro message request ....
 chrome.runtime.onMessage.addListener( //eslint-disable-line no-undef
   function (request, sender, sendResponse) {
+    console.log(request);
     switch (request.type) {
       case messageTypes.FETCH_MESSAGES:
         sendResponse(messages);
         break;
       case messageTypes.SEND_MESSAGE:
-        sendMessageFromClient(request.payload);
+        sendMessageFromClient(request.message);
         break;
       default:
         break;

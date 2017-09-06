@@ -14,7 +14,6 @@ function messages(state = initialState, action) {
     case types.MESSAGE_FETCH_SUCCESS:
       return { ...state, messages: action.messages }
     case types.MESSAGE_CHANGED:
-      console.log(action.composingMessage);
       return { ...state, composingMessage: action.composingMessage }
     default:
       return state;

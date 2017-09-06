@@ -11,6 +11,7 @@ class ChatWindow extends Component {
   constructor(props) {
     super(props);
     this.sendMessage = this.sendMessage.bind(this);
+    this.updateComposingMessage = this.updateComposingMessage.bind(this);
     this.state = {messageInput: ''};
   }
   render() {
@@ -34,7 +35,7 @@ class ChatWindow extends Component {
         </ul>
         <div className="bottom_wrapper clearfix">
           <div className="message_input_wrapper">
-            <input className="message_input" placeholder="Type your message here..." value={this.props.composingMessage} onChange={(e) => this.props.updateComposingMessage(e.target.value)}/>
+            <input className="message_input" placeholder="Type your message here..." value={this.props.composingMessage} onChange={this.updateComposingMessage}/>
           </div>
           <div className="send_message" onClick={this.sendMessage}>
             <div className="icon"></div>
@@ -50,9 +51,11 @@ class ChatWindow extends Component {
     // Fetch messages when chrome window opens
     this.props.fetchMessages();
   }
- 
+  updateComposingMessage(e) {
+    this.props.updateComposingMessage(e.target.value)
+  }
   sendMessage() {
-    console.log('sendmessage', this.props.composingMessage);
+    this.props.updateComposingMessage("");
     this.props.sendMessage(this.props.composingMessage);
   }
 }
