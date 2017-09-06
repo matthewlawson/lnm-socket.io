@@ -1,0 +1,9 @@
+.twitter {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  
+}
+.twitter a {
+  font-size: 15pt;
+}
