@@ -120,9 +120,15 @@ export const initialiseMessageProcessing = params => async dispatch => {
   }
 };
 
+const fetchMessageAction = () => {
+  return {
+    type: messageTypes.FETCH_MESSAGES
+  }
+}
+
 export const fetchMessages = (params) => async dispatch => {
   //Send message to chrome background task and get messages.
-  chrome.runtime.sendMessage({type: messageTypes.FETCH_MESSAGES}, function (response) { //eslint-disable-line no-undef
+  chrome.runtime.sendMessage(fetchMessageAction(), function (response) { //eslint-disable-line no-undef
     if(response) {
       dispatch(messageFetchedSuccess(response));
     }
