@@ -1,3 +1,4 @@
+// background.js
 import io from 'socket.io-client';
 import { messageTypes, messagePayloads } from '../actionsTypes';
 import sendChromeMessage from '../sendChromeMessage';
@@ -51,7 +52,7 @@ function sendMessageFromClient(message) {
 
 //Add listener fro message request ....
 chrome.runtime.onMessage.addListener( //eslint-disable-line no-undef
-  function (request, sender, sendResponse) {
+  (request, sender, sendResponse) => {
     console.log(request);
     switch (request.type) {
       case messageTypes.FETCH_MESSAGES:

@@ -1,15 +1,5 @@
-const server = require('http').createServer();
-const io = require('./connection');
-
-const messageTypes = require('./messageTypes');
-
-io.on('connection', (client) => {
-  io.emit(messageTypes.MESSAGE_TEXT, `${client.id} has joined the room`);
-
-  //Receive from client broadcast to everyone.
-  client.on(messageTypes.SEND_MESSAGE, (message) => {
-    io.emit(messageTypes.MESSAGE_TEXT, message);
-  });
-  
-});
-
+// index.js
+const { global } = require('./constants');
+const debug = require('debug')(`${global.APP_NAME}:index`);
+const monitorJoinLeaves = require('./monitorJoinLeaves')();
+const monitorMessageSending = require('./monitorMessageSending')();

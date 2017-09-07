@@ -1,3 +1,4 @@
+// sendChromeMessage.js
 export default (payload) => {
   console.log("Sending chromeMessage: ", payload);
   return new Promise((resolve, reject) => {

@@ -39,11 +39,11 @@
 				<h4>What I will talk about</h4>
 				<ul>
 					<li>Demo</l1>
-					<li>Chrome Extension Terminology</li>
-					<li>Socket.io Terminology</li>
-					<li>High level design of the extension</li>
-					<li>Dive into the code</li>
-					<li>Malicous extensions / security</li>
+						<li>Chrome Extension Terminology</li>
+						<li>Socket.io Terminology</li>
+						<li>High level design of the extension</li>
+						<li>Dive into the code</li>
+						<li>Malicous extensions / security</li>
 				</ul>
 			</section>
 			<!-- Demo what was built -->
@@ -150,8 +150,9 @@
 						],
 						</code>
 					</pre>
-					<p>Used when you need to interact with the current pages DOM, EG. An adblocker<p>
-					<p>The script runs in isolation from the current pages javascript</p>
+					<p>Used when you need to interact with the current pages DOM, EG. An adblocker
+						<p>
+							<p>The script runs in isolation from the current pages javascript</p>
 				</section>
 				<section>
 					<h4>Omnibox</h4>
@@ -168,12 +169,48 @@
 								}
 							</code>
 						</pre>
-						<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
+					<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
 				</section>
 			</section>
 			<!-- Socket.io terminology -->
 			<section>
-				<section>Socket.io terminology</section>
+				<section>
+					Socket.io terminology
+				</section>
+				<section>
+					What is socket.io?
+				</section>
+				<section>
+					<pre>
+						<code data-trim data-noescape>
+								io.on('connection', (client) => {
+
+								});
+						</code>
+					</pre>
+					<p>Top level events, EG connection</p>
+				</section>
+				<section>
+					<pre>
+						<code data-trim data-noescape>
+							io.emit(EVENT_NAME, {});
+						</code>
+					</pre>
+					<span>Send message to all connected clients</span>
+				</section>
+				<section>
+					<pre>
+						<code data-trim data-noescape>
+							io.on('connection', (client) => {
+								client.broadcast.emit(EVENT_NAME, {});
+							});
+						</code>
+					</pre>
+					<span>Send a message to all connected clients apart from this client.</span>
+				</section>
+				<section>
+					<h4>Rooms / namespace?</h4>
+				</section>
 			</section>
 			<!-- Architecting the extension -->
 			<section>
@@ -187,13 +224,240 @@
 			</section>
 			<!-- Code breakdown -->
 			<section>
-				<section>Code Example One</section>
-				<section>Code Example Two</section>
-				<section>Code Example Three</section>
+				<section>node.js code</section>
+				<section>
+					<h4>Connecting</h4>
+					<pre>
+						<code data-trim data-noescape>
+						// io.js
+						const { global } = require('./constants');
+						const debug = require('debug')(`${global.APP_NAME}:io`);
+						const server = require('http').createServer();
+						
+						const io = require('socket.io')(server, {
+							// Prioritise websocket first.
+							transports: ['websocket', 'polling']
+						});
+						
+						debug('Start socket.io listening');
+						io.listen(3000);
+						module.exports = io;
+					</code>
+					</pre>
+					<p>Leverage node modules to access io object anywhere.</p>
+				</section>
+				<section>
+					<h4>Handle connections and disconnections</h4>
+					<pre>
+						<code data-trim data-noescape>
+						// monitorJoinLeaves.js
+						const { messageTypes, global } = require('./constants');
+						const io = require('./io');
+						const debug = require('debug')(`${global.APP_NAME}:monitorJoinLeaves`);
+						
+						module.exports = () => {
+							io.on('connection', (client) => {
+								broadcastJoinNotification(client);
+								broadcastConnectionCount();
+								client.on('disconnect', () => {
+									broadcastConnectionCount();
+									broadcastDisconnect();
+								});
+							});
+						}
+						</pre>
+					</code>
+				</section>
+				<section>
+					<h4>Monitoring the message sending</h4>
+						<pre>
+							<code data-trim data-noescape>
+								// monitorMessageSending.js
+								const { messageTypes, global } = require('./constants');
+								const io = require('./io');
+								const debug = require('debug')(`${global.APP_NAME}:monitorMessageSending`);
+								
+								module.exports = () => {
+									io.on('connection', (client) => {
+										//Receive from client broadcast to everyone - but this client.
+										client.on(messageTypes.SEND_MESSAGE, (message) => {
+											debug(`Message received & broadcast: ${message}`);
+											<mark>client.broadcast.emit(messageTypes.MESSAGE_TEXT, message);</mark>
+										});
+									});
+								};
+						</code>	
+					</pre>
+				</section>
+				<section>
+					<h4>Bringing it all together</h4>
+					<pre>
+						<code data-trim data-noescape>
+								// index.js
+								const { global } = require('./constants');
+								const debug = require('debug')(`${global.APP_NAME}:index`);
+								const monitorJoinLeaves = require('./monitorJoinLeaves')();
+								const monitorMessageSending = require('./monitorMessageSending')();								
+						</code>
+					</pre>
+				</section>
+			</section>
+			<section>
+				<section>
+					chrome extension
+					<p><small>Background script</small></p>
+				</section>
+				<section>
+					<h4>Connecting to the server</h4>
+					<pre>
+						<code data-trim data-noescape>
+							// background.js
+							import io from 'socket.io-client';
+							const socket = io('http://localhost:3000');
+							
+							socket.on('connect', async () => {
+								connectionStatus = messagePayloads.CONNECTED;
+								const packet = {
+									type: messageTypes.CONNECTION_CHANGE,
+									payload: connectionStatus,
+								}
+								try {
+									<mark>await sendChromeMessage(packet);</mark>
+								}
+								catch (err) { }
+							});
+						</code>
+					</pre>
+					<p>API is very similar to server side.</p>
+				</section>
+				<section>
+					<h4>Sending messages to the browserAction</h4>
+					<pre>
+						<code data-trim data-noescape>
+							export default (payload) => {
+								return new Promise((resolve, reject) => {
+									chrome.runtime.sendMessage(payload, function (response) { //eslint-disable-line no-undef
+										if (response) {
+											resolve(response);
+										}
+										else {
+											reject("browserAction not open");
+										}
+									});
+								});
+							}
+						</code>
+					</pre>
+					<p>Communication between different scripts in the extension uses chrome.runtime.* methods</p>
+				</section>
+				<section>
+					<h4>Receiving messages from the browserAction</h4>
+					<pre>
+						<code data-trim data-noescape>
+							chrome.runtime.onMessage.addListener( //eslint-disable-line no-undef
+								(request, sender, sendResponse) => {
+									switch (request.type) {
+										...
+										case messageTypes.SEND_MESSAGE:
+											// Send to socket client
+											sendMessageFromClient(request.message);
+											break;
+										...
+									}
+								}
+							);
+						</code>
+					</pre>
+				</section>
+			</section>
+			<section>
+				<section>
+					chrome extension
+					<p><small>Browser Action</small></p>
+				</section>
+				<section>
+					<h4>Getting the initial messages from the background</h4>
+					<pre>
+						<code data-trim data-noescape>
+							// actions.js
+							// Redux thunk action creator
+							export const fetchMessages = (params) => async dispatch => {
+								try {
+									const messages = await sendChromeMessage(fetchMessageAction());
+									dispatch(messageFetchedSuccess(messages));
+								}
+								catch(err) { }
+							}
+							...
+							// ChatWindow/index.js
+							componentDidMount() {
+								// Fetch messages when chrome window opens
+								this.props.fetchMessages();
+							}
+							...
+						</code>
+					</pre>
+					<p><small>browserAction has no long life process, it is destroyed everytime it closes</small></p>
+				</section>
+				<section>
+						<h4>Communication is the same as background -> browserAction</h4>
+						<pre>
+							<code data-trim data-noescape>
+									// sendChromeMessage.js
+									export default (payload) => {
+										console.log("Sending chromeMessage: ", payload);
+										return new Promise((resolve, reject) => {
+											chrome.runtime.sendMessage(payload, function (response) { //eslint-disable-line no-undef
+												if (response) {
+													resolve(response);
+												}
+												else {
+													reject("browserAction not open");
+												}
+											});
+										});
+									}
+							</code>
+						</pre>
+						<p><small>Wrap sendMessage() callback in a Promise so we can use async / await</small></p>
+					</section>
 			</section>
 			<!-- What else could be done? -->
-			<section>What else could be done?</section>
-			<section>Security Concerns?</section>
+			<section>
+				<section>What else could be done?</section>
+				<section>
+					<h4>Notifications</h4>
+					<p><img src="img/notification.png" /></p>
+					<h4>Badges</h4>
+					<p><img src="img/badges.png" /></p>
+				</section>
+				<section>
+					<h4>Extra permissions are required to send Notifications</h4>
+						<pre>
+							<code data-trim data-noescape>
+								"permissions": [
+									"activeTab",
+									"alarms",
+									"notifications"
+								]	
+							</code>
+						</pre>
+						<img src="img/permissions.png" />
+				</section>
+				<section>
+					Store state in chrome storage
+				</section>
+			</section>
+			<section>
+				<h4>Security Concerns?</h4>
+				<ul>
+					<li class="fragment">Content Scripts allow to read the DOM</li>
+					<li class="fragment">Browser actions can read the current active tab without notifying on install</li>
+					<li class="fragment">Store submission review</li>
+					<li class="fragment">Read the install permissions closely</li>
+				</ul>
+				<blockquote class="fragment">If you are installing from the extension store you will probably be ok.</blockquote>
+			</section>
 			<section>Questions?</section>
 		</div>
 	</div>

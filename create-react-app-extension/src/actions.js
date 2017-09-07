@@ -65,7 +65,6 @@ export const updateComposingMessage = (composingMessage) => {
 
 export const sendMessage = message => async dispatch => {
   dispatch(sendMessagePending());
-  
   try {
     const backgroundResponse = await sendChromeMessage(sendComposedMessageToBackground(message));
     dispatch(sendMessageSuccess());
@@ -83,11 +82,9 @@ const sendComposedMessageToBackground = (message) => {
   }
 }
 export const initialiseMessageProcessing = params => async dispatch => {
-
   if (!isChromeExtentsion) {
     window.chrome = dummyChrome();
   }
-
   chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
       switch (request.type) {
@@ -127,10 +124,9 @@ const fetchMessageAction = () => {
 }
 
 export const fetchMessages = (params) => async dispatch => {
-  //Send message to chrome background task and get messages.
-  chrome.runtime.sendMessage(fetchMessageAction(), function (response) { //eslint-disable-line no-undef
-    if(response) {
-      dispatch(messageFetchedSuccess(response));
-    }
-  });  
+  try {
+    const messages = await sendChromeMessage(fetchMessageAction());
+    dispatch(messageFetchedSuccess(messages));
+  }
+  catch(err) { }
 }

@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "start": "node index.js"
+    "start": "DEBUG=LNM-server:* node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "debug": "^3.0.1",
     "socket.io": "^2.0.3"
   }
 }
