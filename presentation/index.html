@@ -1,88 +1,219 @@
 <!doctype html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Building a realtime chrome extension with socket.io and node.js</title>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/custom.css">
-		<link rel="stylesheet" href="css/theme/black.css">
+	<title>Building a realtime chrome extension with socket.io and node.js</title>
 
-		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/custom.css">
+	<link rel="stylesheet" href="css/theme/black.css">
 
-		<!-- Printing and PDF exports -->
-		<script>
-			var link = document.createElement( 'link' );
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
-			document.getElementsByTagName( 'head' )[0].appendChild( link );
-		</script>
-	</head>
-	<body>
-		<div class="reveal">
-			<span class="twitter"><a>@mattsgarage</a></span>
-			<div class="slides">
-				<!-- Intro -->
-				<section>
-					<h3>Building a realtime chrome extension with socket.io and node.js</h3>
-					<p>Matthew Lawson - Senior Developer</p><p><a href="http://comparethemarket.com/">Comparethemarket.com</a></p>
-				</section>
-				<!-- What I will talk about -->
-				<section>
-					<h4>What I will talk about</h4>
-					<ul>
-						<li>Demo</l1>
-						<li>Chrome Extension</li>
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
 
-					</ul>
-				</section>
-				<!-- Demo what was built -->
-				<section>Demo - invite to connect.</section>
-				<!-- Chrome Extension basic terminology -->
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+</head>
+
+<body>
+	<div class="reveal">
+		<span class="twitter"><a>@mattsgarage</a></span>
+		<div class="slides">
+			<!-- Intro -->
+			<section>
+				<h3>Building a realtime chrome extension with socket.io and node.js</h3>
+				<p>Matthew Lawson - Senior Developer</p>
+				<p><a href="http://comparethemarket.com/">Comparethemarket.com</a></p>
+			</section>
+			<!-- What I will talk about -->
+			<section>
+				<h4>What I will talk about</h4>
+				<ul>
+					<li>Demo</l1>
+					<li>Chrome Extension Terminology</li>
+					<li>Socket.io Terminology</li>
+					<li>High level design of the extension</li>
+					<li>Dive into the code</li>
+					<li>Malicous extensions / security</li>
+				</ul>
+			</section>
+			<!-- Demo what was built -->
+			<section>Demo - invite to connect.</section>
+			<!-- Chrome Extension basic terminology -->
+			<section>
 				<section>Chrome Extension basic Terminology</section>
-				<!-- Socket.io terminology -->
+				<section>
+					<h4>The manifest.json</h4>
+					<pre class="stretch">
+						<code data-trim data-noescape>
+							{
+								"manifest_version": 2,
+								"name": "Browser Chat",
+								"description": "This extension is a mini socket.io chat client",
+								"version": "0.1.0",
+								"browser_action": {
+									"default_icon": "images/browserActionIcon.png",
+									"default_popup": "dist/index.html",
+									"default_title": "Get your Quotes!"
+								},
+								"icons": {
+									"16": "images/icon16.png",
+									"48": "images/icon48.png",
+									"128": "images/icon128.png"
+								},
+								"background": {
+									"scripts": [
+										"background.bundle.js"
+									],
+									"persistent": true
+								},
+								"permissions": [
+									"activeTab",
+									"notifications"
+								]
+							}
+						</code>
+					</pre>
+				</section>
+				<section>
+					<h4>Browser Action</h4>
+					<pre>
+					<code data-trim data-noescape>
+					{
+						"browser_action": {
+							"default_icon": "images/browserActionIcon.png",
+							"default_popup": "dist/index.html",
+							"default_title": "Get your Quotes!"
+						}
+					}
+						</code>
+					</pre>
+					<p>Effectively a front end for the extension</p>
+					<a href="https://developer.chrome.com/extensions/browserAction">More info</a>
+				</section>
+				<section>
+					Page Actions
+					<p>For extensions that only apply to certain pages</p>
+					<p>Become greyed out if not appropriate for this page
+						<p>
+							<a href="https://developer.chrome.com/extensions/pageAction">More info</a>
+				</section>
+				<section>
+					<h4>Background Pages</h4>
+					<pre>
+						<code data-trim data-noescape>
+								"background": {
+									"scripts": [
+										"background.bundle.js"
+									],
+									"persistent": true
+								},
+							</code>
+						</pre>
+					<p>A long running script that is active once chrome is open</p>
+					<p>Very powerful</p>
+				</section>
+				<section>
+					<h4>Event Pages</h4>
+					<pre>
+							<code data-trim data-noescape>
+									"background": {
+										"scripts": [
+											"background.bundle.js"
+										],
+										<mark>"persistent": false</mark>
+									},
+								</code>
+							</pre>
+					<p>A more efficient background page</p>
+					<p>Sleeps when not required and reacts to events</p>
+				</section>
+				<section>
+					<h4>Content Scripts</h4>
+					<pre>
+						<code data-trim data-noescape>
+							"content_scripts": [
+							{
+								"matches": ["http://www.google.com/*"],
+								"css": ["mystyles.css"],
+								"js": ["jquery.js", "myscript.js"]
+							}
+						],
+						</code>
+					</pre>
+					<p>Used when you need to interact with the current pages DOM, EG. An adblocker<p>
+					<p>The script runs in isolation from the current pages javascript</p>
+				</section>
+				<section>
+					<h4>Omnibox</h4>
+					<img src="img/omnibox.png" />
+					<pre>
+							<code data-trim data-noescape>
+								"omnibox": { "keyword" : "matt" },
+								"icons": {
+									"16": "16-full-color.png"
+								},
+								"background": {
+									"persistent": false,
+									"scripts": ["background.js"]
+								}
+							</code>
+						</pre>
+						<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
+				</section>
+			</section>
+			<!-- Socket.io terminology -->
+			<section>
 				<section>Socket.io terminology</section>
-				<!-- Architecting the extension -->
-				<section >
-					<h4>Basic Architecture</h4>
-					<img width="500" src="img/architecture.png" />
-				</section>
-				<!-- Network Diagram -->
-				<section>
-					<h4>Network Diagram</h4>
-					<img width="500"src="img/network.png" />
-				</section>
-				<!-- Code breakdown -->
-				<section>
-					<section>Code Example One</section>
-					<section>Code Example Two</section>
-					<section>Code Example Three</section>
-				</section>
-				<!-- What else could be done? -->
-				<section>What else could be done?</section>
-				<section>Questions?</section>
-			</div>
+			</section>
+			<!-- Architecting the extension -->
+			<section>
+				<h4>Basic Architecture</h4>
+				<img class="stretch" src="img/architecture.png" />
+			</section>
+			<!-- Network Diagram -->
+			<section>
+				<h4>Network Diagram</h4>
+				<img class="stretch" src="img/network.png" />
+			</section>
+			<!-- Code breakdown -->
+			<section>
+				<section>Code Example One</section>
+				<section>Code Example Two</section>
+				<section>Code Example Three</section>
+			</section>
+			<!-- What else could be done? -->
+			<section>What else could be done?</section>
+			<section>Security Concerns?</section>
+			<section>Questions?</section>
 		</div>
+	</div>
 
-		<script src="lib/js/head.min.js"></script>
-		<script src="js/reveal.js"></script>
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.js"></script>
 
-		<script>
-			// More info about config & dependencies:
-			// - https://github.com/hakimel/reveal.js#configuration
-			// - https://github.com/hakimel/reveal.js#dependencies
-			Reveal.initialize({
-				dependencies: [
-					{ src: 'plugin/markdown/marked.js' },
-					{ src: 'plugin/markdown/markdown.js' },
-					{ src: 'plugin/notes/notes.js', async: true },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
-				]
-			});
-		</script>
-	</body>
+	<script>
+		// More info about config & dependencies:
+		// - https://github.com/hakimel/reveal.js#configuration
+		// - https://github.com/hakimel/reveal.js#dependencies
+		Reveal.initialize({
+			dependencies: [
+				{ src: 'plugin/markdown/marked.js' },
+				{ src: 'plugin/markdown/markdown.js' },
+				{ src: 'plugin/notes/notes.js', async: true },
+				{ src: 'plugin/highlight/highlight.js', async: true, callback: function () { hljs.initHighlightingOnLoad(); } }
+			]
+		});
+	</script>
+</body>
+
 </html>
