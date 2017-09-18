@@ -7,6 +7,11 @@ const socket = io('http://d46f2165.ngrok.io');
 
 let messages = [];
 let connectionStatus = messagePayloads.CONNECTING;
+let baseNotification = {
+  type: "basic",
+  iconUrl: "images/icon128.png",
+  title: "New Message Received"
+}
 
 socket.on('connect', async () => {
   connectionStatus = messagePayloads.CONNECTED;
@@ -28,6 +33,10 @@ socket.on(messageTypes.MESSAGE_TEXT, async (payload) => {
     payload: payload
   }
   try {
+    let notification = Object.assign({}, baseNotification, {message: payload});
+    chrome.notifications.create(notification, (notificationId) => { //eslint-disable-line no-undef
+
+    });
     await sendChromeMessage(packet);
   }
   catch (err) { }

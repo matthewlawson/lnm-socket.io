@@ -3348,6 +3348,11 @@ const socket = __WEBPACK_IMPORTED_MODULE_0_socket_io_client___default()('http://
 
 let messages = [];
 let connectionStatus = __WEBPACK_IMPORTED_MODULE_1__actionsTypes__["a" /* messagePayloads */].CONNECTING;
+let baseNotification = {
+  type: "basic",
+  iconUrl: "images/icon128.png",
+  title: "New Message Received"
+}
 
 socket.on('connect', async () => {
   connectionStatus = __WEBPACK_IMPORTED_MODULE_1__actionsTypes__["a" /* messagePayloads */].CONNECTED;
@@ -3369,6 +3374,10 @@ socket.on(__WEBPACK_IMPORTED_MODULE_1__actionsTypes__["b" /* messageTypes */].ME
     payload: payload
   }
   try {
+    let notification = Object.assign({}, baseNotification, {message: payload});
+    chrome.notifications.create(notification, (notificationId) => { //eslint-disable-line no-undef
+
+    });
     await Object(__WEBPACK_IMPORTED_MODULE_2__sendChromeMessage__["a" /* default */])(packet);
   }
   catch (err) { }
