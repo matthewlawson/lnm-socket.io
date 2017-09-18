@@ -33,6 +33,9 @@
 				<h3>Building a realtime chrome extension with socket.io and node.js</h3>
 				<p>Matthew Lawson - Senior Developer</p>
 				<p><a href="http://comparethemarket.com/">Comparethemarket.com</a></p>
+				<aside class="notes">
+					My background in chat and chat games, @ ctm for a few months
+				</aside>
 			</section>
 			<!-- What I will talk about -->
 			<section>
@@ -45,9 +48,21 @@
 						<li>Dive into the code</li>
 						<li>Malicious extensions / security</li>
 				</ul>
+				<aside class="notes">
+					<ul>
+						<li>Read it.</li>
+						<li>Aim is to have an understanding how you could build and architect a project like this yourself</li>
+						<li>And get an idea of some of hte best practices for developing chrome extensions.</li>
+					</ul>
+				</aside>
 			</section>
 			<!-- Demo what was built -->
-			<section>demo</section>
+			<section>
+				demo
+				<aside class="notes">
+					Pass Surface around. Show how to use, Suggest use it for questions.
+				</aside>
+			</section>
 			<!-- Chrome Extension basic terminology -->
 			<section>
 				<section>chrome extension basic terminology</section>
@@ -83,6 +98,11 @@
 							}
 						</code>
 					</pre>
+					<aside class="notes">
+						<ul>
+							<li>Talk through overview of the manifest file.</li>
+						</ul>
+					</aside>
 				</section>
 				<section>
 					<h4>Browser Action</h4>
@@ -99,13 +119,28 @@
 					</pre>
 					<p>Effectively a front end for the extension</p>
 					<a href="https://developer.chrome.com/extensions/browserAction">More info</a>
+					<aside class="notes">
+						<ul>
+							<li>Examples include:</li>
+							<li>Pushbullet for sending notifications to phone</li>
+							<li>My extension</li>
+						</ul>
+					</aside>
 				</section>
 				<section>
 					Page Actions
 					<p>For extensions that only apply to certain pages</p>
-					<p>Become greyed out if not appropriate for this page
-						<p>
-							<a href="https://developer.chrome.com/extensions/pageAction">More info</a>
+					<p>Become greyed out if not appropriate for this page</p>
+					<p>
+						<a href="https://developer.chrome.com/extensions/pageAction">More info</a>
+					</p>
+					<aside class="notes">
+							<ul>
+								<li>Examples include:</li>
+								<li>camel camel camel</li>
+								<li>Checking prices on amazon items</li>
+							</ul>
+						</aside>
 				</section>
 				<section>
 					<h4>Background Pages</h4>
@@ -121,6 +156,14 @@
 						</pre>
 					<p>A long running script that is active once chrome is open</p>
 					<p>Very powerful</p>
+					<aside class="notes">
+						<ul>
+							<li>Examples include:</li>
+							<li>My Extension</li>
+							<li>Analytics gathering</li>
+							<li>... if you go to chrome://extensions you can turn on dev mode and inspect</li>
+						</ul>
+					</aside>
 				</section>
 				<section>
 					<h4>event pages</h4>
@@ -171,6 +214,19 @@
 						</pre>
 					<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
 				</section>
+				<section>
+					<h4>Override pages</h4>
+					<img class="stretch" src="img/tabbycat.png" />
+					<p>Allows you to replace bookmarks / new tab / history <a href="https://developer.chrome.com/extensions/override">More Info</a></p>
+					
+					<aside class="notes">
+						<ul>
+							<li>Demo tabby cat.</li>
+							<li>Other Examples:</li>
+							<li>Dashboard - meetings / emails / weather</li>
+						</ul>
+					</aside>
+				</section>
 			</section>
 			<!-- Socket.io terminology -->
 			<section>
@@ -180,8 +236,8 @@
 				<section>
 					<h4>What is socket.io?</h4>
 					<blockquote>
-						"Socket.IO enables real-time bidirectional event-based communication.
-						It works on every platform, browser or device, focusing equally on reliability and speed."
+						"Socket.IO enables real-time bidirectional event-based communication. It works on every platform, browser or device, focusing
+						equally on reliability and speed."
 						<footer>
 							<cite>- https://socket.io</cite>
 						</footer>
@@ -216,7 +272,16 @@
 					<span>Send a message to all connected clients apart from this client.</span>
 				</section>
 				<section>
-					<h4>Rooms / namespace?</h4>
+					<h4>Rooms / namespace</h4>
+					<aside class="notes">
+						<p>A way to broadcast to groups of connections</p>
+						<ul>
+							<li>namespaces can only be joined to from the client at connection time by joining a different endpoint</li>
+							<li>rooms are joined to from the server side</li>
+						</ul>
+						<p>Example in an online game chat a namespace could be which server you connect to and the room is a chat room within that server</p>
+						<p>It is a powerful way to simpify your server logic.</p>
+					</aside>
 				</section>
 			</section>
 			<!-- Architecting the extension -->
@@ -227,7 +292,7 @@
 			<!-- Network Diagram -->
 			<section>
 				<h4>Network Diagram</h4>
-				<img class="stretch" src="img/network.png" />
+				<img class="stretch" src="img/network_2.png" />
 			</section>
 			<!-- Code breakdown -->
 			<section>
@@ -252,6 +317,9 @@
 					</code>
 					</pre>
 					<p>Leverage node modules to access io object anywhere.</p>
+					<aside class="notes">
+						<p>io object can now be required() from anywhere in the app and listen for events.</p>
+					</aside>
 				</section>
 				<section>
 					<h4>Handle connections and disconnections</h4>
@@ -276,8 +344,8 @@
 					</code>
 				</section>
 				<section>
-					<h4>Monitoring the message sending</h4>
-						<pre>
+					<h4>Handle Broadcasting messages</h4>
+					<pre>
 							<code data-trim data-noescape>
 								// monitorMessageSending.js
 								const { messageTypes, global } = require('./constants');
@@ -295,6 +363,11 @@
 								};
 						</code>	
 					</pre>
+					<aside class="notes">
+						<p>A more robust example would use rooms, but we can just use the default room for now.</p>
+						<p>Socket.io creates default rooms and namespaces and uses these by default</p>
+						<p>The broadcast will send to every connected client apart from the one that sends it</p>
+					</aside>
 				</section>
 				<section>
 					<h4>Bringing it all together</h4>
@@ -341,9 +414,10 @@
 					<h4>Sending messages to the browserAction</h4>
 					<pre>
 						<code data-trim data-noescape>
+							// sendChromeMessage.js
 							export default (payload) => {
 								return new Promise((resolve, reject) => {
-									chrome.runtime.sendMessage(payload, function (response) { //eslint-disable-line no-undef
+									chrome.runtime.sendMessage(payload, function (response) { 
 										if (response) {
 											resolve(response);
 										}
@@ -407,8 +481,8 @@
 					<p><small>browserAction has no long life process, it is destroyed everytime it closes</small></p>
 				</section>
 				<section>
-						<h4>Communication is the same as background -> browserAction</h4>
-						<pre>
+					<h4>Communication is the same as background -> browserAction</h4>
+					<pre>
 							<code data-trim data-noescape>
 									// sendChromeMessage.js
 									export default (payload) => {
@@ -426,8 +500,8 @@
 									}
 							</code>
 						</pre>
-						<p><small>Wrap sendMessage() callback in a Promise so we can use async / await</small></p>
-					</section>
+					<p><small>Wrap sendMessage() callback in a Promise so we can use async / await</small></p>
+				</section>
 			</section>
 			<!-- What else could be done? -->
 			<section>
@@ -440,7 +514,7 @@
 				</section>
 				<section>
 					<h4>Extra permissions are required to send Notifications</h4>
-						<pre>
+					<pre>
 							<code data-trim data-noescape>
 								"permissions": [
 									"activeTab",
@@ -449,7 +523,7 @@
 								]	
 							</code>
 						</pre>
-						<img src="img/permissions.png" />
+					<img src="img/permissions.png" />
 				</section>
 				<section>
 					Store state in chrome storage
