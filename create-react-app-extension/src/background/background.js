@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 import { messageTypes, messagePayloads } from '../actionsTypes';
 import sendChromeMessage from '../sendChromeMessage';
 
-const socket = io('http://localhost:3000');
+const socket = io('http://d46f2165.ngrok.io');
 
 let messages = [];
 let connectionStatus = messagePayloads.CONNECTING;
