@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+  "name": "Browser Chat",
+  "description": "This extension is a mini socket.io chat client",
+  "version": "0.1.0",
+  "browser_action": {
+    "default_icon": "images/browserActionIcon.png",
+    "default_popup": "dist/index.html",
+    "default_title": "Get your Quotes!"
+  },
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "background": {
+    "scripts": [
+      "background.bundle.js"
+    ],
+    "persistent": true
+  },
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "notifications"
+  ]
+}
