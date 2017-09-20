@@ -31,10 +31,11 @@
 			<!-- Intro -->
 			<section>
 				<h3>Building a realtime chrome extension with socket.io and node.js</h3>
-				<p>Matthew Lawson - Senior Developer</p>
+				<p>Matthew Lawson - Senior Engineer</p>
 				<p><a href="http://comparethemarket.com/">Comparethemarket.com</a></p>
 				<aside class="notes">
 					My background in chat and chat games, @ ctm for a few months
+					Has anyone made a chrome extensions / used one / used chrome?
 				</aside>
 			</section>
 			<!-- What I will talk about -->
@@ -42,11 +43,11 @@
 				<h4>What I will talk about</h4>
 				<ul>
 					<li>Demo</l1>
-						<li>Chrome Extension Terminology</li>
-						<li>Socket.io Terminology</li>
-						<li>High level design of the extension</li>
-						<li>Dive into the code</li>
-						<li>Malicious extensions / security</li>
+					<li>Chrome Extension Terminology</li>
+					<li>Socket.io Terminology</li>
+					<li>High level design of the extension</li>
+					<li>Dive into the code</li>
+					<li>Malicious extensions / security</li>
 				</ul>
 				<aside class="notes">
 					<ul>
@@ -143,6 +144,23 @@
 						</aside>
 				</section>
 				<section>
+					<h4>Omnibox</h4>
+					<img src="img/omnibox.png" />
+					<pre>
+							<code data-trim data-noescape>
+								"omnibox": { "keyword" : "matt" },
+								"icons": {
+									"16": "16-full-color.png"
+								},
+								"background": {
+									"persistent": false,
+									"scripts": ["background.js"]
+								}
+							</code>
+						</pre>
+					<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
+				</section>
+				<section>
 					<h4>Background Pages</h4>
 					<pre>
 						<code data-trim data-noescape>
@@ -193,27 +211,13 @@
 						],
 						</code>
 					</pre>
-					<p>Used when you need to interact with the current pages DOM, EG. An adblocker
-						<p>
-							<p>The script runs in isolation from the current pages javascript</p>
+					<p>Used when you need to interact with the current pages DOM, EG. An adblocker<p/>
+					<p>The script runs in isolation from the current pages javascript</p>
+					<aside class="notes">
+						<p>Examples: adblocker, reading and processing microformats on the page</p>
+					</aside>
 				</section>
-				<section>
-					<h4>Omnibox</h4>
-					<img src="img/omnibox.png" />
-					<pre>
-							<code data-trim data-noescape>
-								"omnibox": { "keyword" : "matt" },
-								"icons": {
-									"16": "16-full-color.png"
-								},
-								"background": {
-									"persistent": false,
-									"scripts": ["background.js"]
-								}
-							</code>
-						</pre>
-					<p>Background Script is sent events when the search keyword is activated <a href="https://developers.chrome.com/extensions/omnibox">More Info</a></p>
-				</section>
+				
 				<section>
 					<h4>Override pages</h4>
 					<img class="stretch" src="img/tabbycat.png" />
@@ -256,7 +260,7 @@
 				<section>
 					<pre>
 						<code data-trim data-noescape>
-							io.emit(EVENT_NAME, {});
+							io.emit(EVENT_NAME, 'Hello World!');
 						</code>
 					</pre>
 					<span>Send message to all connected clients</span>
@@ -273,12 +277,14 @@
 				</section>
 				<section>
 					<h4>Rooms / namespace</h4>
+					<img class="stretch" src="img/room-namespace.png" />
 					<aside class="notes">
 						<p>A way to broadcast to groups of connections</p>
 						<ul>
 							<li>namespaces can only be joined to from the client at connection time by joining a different endpoint</li>
 							<li>rooms are joined to from the server side</li>
 						</ul>
+						<p>Slack workspace / channel example</p>
 						<p>Example in an online game chat a namespace could be which server you connect to and the room is a chat room within that server</p>
 						<p>It is a powerful way to simpify your server logic.</p>
 					</aside>
@@ -327,7 +333,7 @@
 						<code data-trim data-noescape>
 						// monitorJoinLeaves.js
 						const { messageTypes, global } = require('./constants');
-						const io = require('./io');
+						<mark>const io = require('./io');</mark>
 						const debug = require('debug')(`${global.APP_NAME}:monitorJoinLeaves`);
 						
 						module.exports = () => {
@@ -417,7 +423,7 @@
 							// sendChromeMessage.js
 							export default (payload) => {
 								return new Promise((resolve, reject) => {
-									chrome.runtime.sendMessage(payload, function (response) { 
+								<mark>chrome.runtime.sendMessage(payload, function (response) { </mark>
 										if (response) {
 											resolve(response);
 										}
@@ -435,13 +441,13 @@
 					<h4>Receiving messages from the browserAction</h4>
 					<pre>
 						<code data-trim data-noescape>
-							chrome.runtime.onMessage.addListener( //eslint-disable-line no-undef
+							<mark>chrome.runtime.onMessage.addListener( </mark>
 								(request, sender, sendResponse) => {
 									switch (request.type) {
 										...
 										case messageTypes.SEND_MESSAGE:
 											// Send to socket client
-											sendMessageFromClient(request.message);
+											socket.emit(messageTypes.SEND_MESSAGE, request.message);
 											break;
 										...
 									}
@@ -449,12 +455,19 @@
 							);
 						</code>
 					</pre>
+					<aside class="notes">
+						Show how it links up with the network diagram
+					</aside>
 				</section>
 			</section>
 			<section>
 				<section>
 					chrome extension
 					<p><small>Browser Action</small></p>
+					<aside class="notes">
+						<p>It is a regular react app built with facebooks create react app as a starting point.</p>
+						<p>We use redux and redux thunk for managing the state.</p> 
+					</aside>
 				</section>
 				<section>
 					<h4>Getting the initial messages from the background</h4>
@@ -471,14 +484,19 @@
 							}
 							...
 							// ChatWindow/index.js
-							componentDidMount() {
+							<mark>componentDidMount() {
 								// Fetch messages when chrome window opens
 								this.props.fetchMessages();
 							}
+						</mark>
 							...
 						</code>
 					</pre>
 					<p><small>browserAction has no long life process, it is destroyed everytime it closes</small></p>
+					<aside class="notes">
+						<p>sendChromeMessage using chrom.* api to send a message to the background thread.</p>
+						<p>fetchMessageAction() is a normal action creator that returns an object repfesenting a request</p>
+					</aside>
 				</section>
 				<section>
 					<h4>Communication is the same as background -> browserAction</h4>
@@ -527,6 +545,9 @@
 				</section>
 				<section>
 					Store state in chrome storage
+					<aside class="notes">
+						All regular persistance options available as would be in chrome + chrome storage & chrome account sync storage
+					</aside>
 				</section>
 			</section>
 			<section>
@@ -539,10 +560,20 @@
 					<li class="fragment">What is googles plan for extensions?</li>
 				</ul>
 				<blockquote class="fragment">If you are installing from the extension store you will probably be ok.</blockquote>
+				<aside class="notes">
+					<p>As a developer you can do these things, </p>
+					<p>Could potentially gather a lot of detail about browing habits</p>
+					<p>Machine review can trigger a human review, if the static analysis looks like it is sending user data etc. 
+						This isn't ecessarily enough to get blocked from the store if you declare what you are doing in the app desciption
+					</p>
+				</aside>
 			</section>
 			<section>
 				<h4>Future of Chrome extensions</h4>
 				<p>No new API's since chrome 46 / late 2015</p>
+				<aside class="notes">
+					Chrome apps are built with the same apis as extensions and lots of new apis came out aroun the time of hte chrome books
+				</aside>
 			</section>
 			<section>questions</section>
 		</div>
